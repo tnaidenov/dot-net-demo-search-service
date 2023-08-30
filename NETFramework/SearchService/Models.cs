@@ -14,9 +14,7 @@ namespace SearchServiceNS
     public class SearchResultAction
     {
         public string method { get; set; }
-
-        [DOT.AGM.Services.ServiceOperationField(Name = "params")]
-        public DOT.AGM.Value parameters { get; set; }
+        public object @params { get; set; }
     }
     public class SearchResultItem
     {

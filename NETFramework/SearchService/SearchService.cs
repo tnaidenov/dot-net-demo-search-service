@@ -116,17 +116,25 @@ namespace SearchServiceNS
 
         public async Task InitiateSearch(string id, string searchString, IInstance caller)
         {
-            // simulate delay from getting results from external system
-            await Task.Delay(1000);
-
-            // "transform the results" into search result items
-            List<SearchResultItem> items = new List<SearchResultItem>();
-            for(int counter = 1; counter <=3; ++counter)
+            try
             {
-                items.Add(generateSampleResultItem(searchString, counter));
-            }
+                // simulate delay from getting results from external system
+                await Task.Delay(1000);
 
-            await SendSearchResults(id, items, STATUS_DONE, caller);
+                // "transform the results" into search result items
+                List<SearchResultItem> items = new List<SearchResultItem>();
+                for (int counter = 1; counter <= 3; ++counter)
+                {
+                    items.Add(generateSampleResultItem(searchString, counter));
+                }
+
+                await SendSearchResults(id, items, STATUS_DONE, caller);
+            }
+            catch (Exception)
+            {
+                // complete the search with an empty result
+                _ = SendSearchResults(id, null, STATUS_DONE, caller);
+            }
         }
 
         public SearchResultItem generateSampleResultItem(string searchString, int counter)
@@ -138,21 +146,19 @@ namespace SearchServiceNS
             }
             var itemId = $"{category}_{counter}_{searchString}";
             var type = $"Type {searchString}";
+
             var result = new SearchResultItem(itemId, type, category)
             {
-                id = itemId,
-                type = $"Type {searchString}",
-                category = category,
                 displayName = $"Item {searchString} #{counter}",
                 description = $"Description for {searchString} #{counter}",
                 action = new SearchResultAction()
                 {
                     method = Action01Handler.ACTION_HANDLER_METHOD,
-                    parameters = ser.Serialize(new Action01Parameters()
+                    @params = new Action01Parameters()
                     {
                         counter = counter,
                         id = itemId
-                    })
+                    }
                 }
             };
             return result;

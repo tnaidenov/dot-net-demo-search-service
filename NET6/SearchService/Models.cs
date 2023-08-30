@@ -22,9 +22,7 @@
     public class SearchResultAction
     {
         public string? method { get; set; }
-
-        [Glue.Services.ServiceOperationField(Name = "params")]
-        public Glue.Transport.Value parameters { get; set; }
+        public object @params { get; set; }
     }
     public class SearchResultItem
     {
@@ -55,7 +53,6 @@
         {
             queryId = id;
         }
-
     }
 }
 

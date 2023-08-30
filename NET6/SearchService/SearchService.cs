@@ -14,8 +14,6 @@ namespace SearchServiceNS
         public static string OPERATION_CANCEL = "cancel";
 
         public static string STATUS_DONE = "done";
-        public static string STATUS_IN_PROGRESS = "in-progress";
-
 
         private Glue42 glue_;
 
@@ -101,10 +99,11 @@ namespace SearchServiceNS
             {
                 status = status
             };
-            if(items is List<SearchResultItem>)
+            if (items is List<SearchResultItem>)
             {
                 invokeParam.items = items;
             }
+
             await glue_.Interop.Invoke(
                 SEARCH_RESULTS_METHOD,
                 toDictionary(invokeParam),
@@ -114,17 +113,25 @@ namespace SearchServiceNS
 
         public async Task InitiateSearch(string id, string searchString, IGlueInstance caller)
         {
-            // simulate delay from getting results from external system
-            await Task.Delay(1000);
-
-            // "transform the results" into search result items
-            List<SearchResultItem> items = new List<SearchResultItem>();
-            for(int counter = 1; counter <=3; ++counter)
+            try
             {
-                items.Add(generateSampleResultItem(searchString, counter));
-            }
+                // simulate delay from getting results from external system
+                await Task.Delay(1000);
 
-            await SendSearchResults(id, items, STATUS_DONE, caller);
+                // "transform the results" into search result items
+                List<SearchResultItem> items = new List<SearchResultItem>();
+                for (int counter = 1; counter <= 3; ++counter)
+                {
+                    items.Add(generateSampleResultItem(searchString, counter));
+                }
+
+                await SendSearchResults(id, items, STATUS_DONE, caller);
+            }
+            catch (Exception)
+            {
+                // complete the search with an empty result
+                _ = SendSearchResults(id, null, STATUS_DONE, caller);
+            }
         }
 
         public SearchResultItem generateSampleResultItem(string searchString, int counter)
@@ -144,11 +151,11 @@ namespace SearchServiceNS
                 action = new SearchResultAction()
                 {
                     method = Action01Handler.ACTION_HANDLER_METHOD,
-                    parameters = ser.Serialize(new Action01Parameters()
+                    @params = new Action01Parameters()
                     {
                         counter = counter,
                         id = itemId
-                    })
+                    }
                 }
             };
             return result;
